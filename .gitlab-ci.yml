@@ -1,0 +1,20 @@
+---
+image: buluma/github-action-molecule:5.0.7
+
+stages:
+  - lint
+  - molecule
+
+lint:
+  stage: lint
+  script: |
+    yamllint -d "{extends: default, rules: {line-length: {level: warning}}}" .
+
+molecule:
+  stage: molecule
+  variables:
+    ANSIBLE_FORCE_COLOR: '1'
+    PY_COLORS: '1'
+  script: |
+    cd roles/apptainer
+    molecule test
