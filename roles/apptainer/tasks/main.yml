@@ -1,0 +1,32 @@
+---
+- name: Install Apptainer
+  community.general.zypper:
+    name: "{{ item.package }}"
+    state: present
+  when: item.version == ansible_facts['distribution_version']
+  loop:
+    - version: '15.3'
+      package: 'https://download.opensuse.org/repositories/openSUSE:/Leap:/15.4:/Update/standard/x86_64/apptainer-1.1.2-lp154.2.1.x86_64.rpm'
+    - version: '15.4'
+      package: 'apptainer'
+
+# https://apptainer.org/docs/user/latest/endpoint.html#restoring-pre-apptainer-library-behavior
+- name: Restore pre-Apptainer library behavior
+  ansible.builtin.shell: |
+    set -eu
+    apptainer remote add --global --no-login SylabsCloud cloud.sycloud.io
+    apptainer remote use --global SylabsCloud
+  register: result
+  changed_when: result.rc == 0
+  failed_when: false
+
+- name: Configure Apptainer cache and tmp on /scratch
+  ansible.builtin.copy:
+    dest: /etc/profile.d/apptainer.sh
+    content: |
+      export SINGULARITY_CACHEDIR="/scratch/$USER/.singularity/cache"
+      export SINGULARITY_TMPDIR="/scratch/$USER/.singularity/tmp"
+      export APPTAINER_CACHEDIR="$SINGULARITY_CACHEDIR"
+      export APPTAINER_TMPDIR="$SINGULARITY_TMPDIR"
+      mkdir -pm0755 "$SINGULARITY_CACHEDIR" >/dev/null
+      mkdir -pm0755 "$SINGULARITY_TMPDIR" >/dev/null

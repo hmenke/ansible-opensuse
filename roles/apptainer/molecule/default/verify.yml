@@ -1,0 +1,14 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: List Apptainer repositories
+      ansible.builtin.shell: |
+        apptainer remote list
+      register: apptainer_remote
+
+    - name: Assert that Apptainer is set up
+      ansible.builtin.assert:
+        that: "'SylabsCloud' in apptainer_remote.stdout"
