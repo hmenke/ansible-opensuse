@@ -6,7 +6,15 @@ driver:
 platforms:
   - name: instance
     image: "opensuse/leap:${MOLECULE_DISTRO:-15.4}"
-    pre_build_image: true
+    dockerfile: Dockerfile.j2
+    pre_build_image: false
+    command: /usr/lib/systemd/systemd
+    cgroupns_mode: host
+    tmpfs:
+      - /run
+      - /tmp
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
 provisioner:
   name: ansible
 verifier:
